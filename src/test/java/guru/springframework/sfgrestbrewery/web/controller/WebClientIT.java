@@ -1,5 +1,7 @@
 package guru.springframework.sfgrestbrewery.web.controller;
 
+import guru.springframework.sfgrestbrewery.bootstrap.BeerLoader;
+import guru.springframework.sfgrestbrewery.web.model.BeerDto;
 import guru.springframework.sfgrestbrewery.web.model.BeerPagedList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,9 @@ import reactor.core.scheduler.Schedulers;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /**
  * Created by jt on 3/7/21.
@@ -50,4 +55,27 @@ public class WebClientIT {
 
         countDownLatch.await();
     }
+
+    @Test
+    void testGetBeerByUPC() throws InterruptedException {
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+
+        Mono<BeerDto> beerDtoMono = webClient.get().uri("/api/v1/beerUpc/" + BeerLoader.BEER_2_UPC)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve().bodyToMono(BeerDto.class);
+
+         beerDtoMono.subscribe(beerDto -> {
+             assertThat(beerDto).isNotNull();
+             assertThat(beerDto.getBeerName()).isNotNull();
+
+             countDownLatch.countDown();
+         });
+
+
+        final boolean await = countDownLatch.await(1000, TimeUnit.MILLISECONDS);
+        assertThat(countDownLatch.getCount()).isEqualTo(0);
+    }
+
+
 }

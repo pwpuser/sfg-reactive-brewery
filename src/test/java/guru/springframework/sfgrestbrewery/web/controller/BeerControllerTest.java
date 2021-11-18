@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,7 @@ class BeerControllerTest {
     @Test
     void getBeerById() {
         UUID uuid = UUID.randomUUID();
-        given(beerService.getById(any(), any())).willReturn(beerDto);
+        given(beerService.getById(any(), any())).willReturn(Mono.just(beerDto));
 
         webTestClient.get()
                 .uri("/api/v1/beer/" + uuid)
@@ -73,7 +74,7 @@ class BeerControllerTest {
 
     @Test
     void getBeerByUpc() {
-        given(beerService.getByUpc(any())).willReturn(beerDto);
+        given(beerService.getByUpc(any())).willReturn(Mono.just(beerDto));
 
         webTestClient.get()
                 .uri("/api/v1/beerUpc/" + beerDto.getUpc())
